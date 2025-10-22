@@ -1,3 +1,4 @@
+for boringstuff = 1:1       %not a for loop, just folds away comments
 %A code which calls a linear multiple actuator cylinder code multiple
 %times, to see how power varies when the row length varies.
 %An initial release of the planned full multiple actuator cylinder code.
@@ -37,10 +38,6 @@
 %issues resulting from use or abuse of the code if it is complete and
 %functional.
 
-%%%%%With the disclaimer made, a validation of the called code is nonetheless
-%provided alongside it, showing its accuracy compared to measured results
-%and other's computaitonal results.
-
 
 %If you wish to receive updates when this code is updated; contact me with
 %improvements, questions or suggestions regarding the code; or have found
@@ -60,8 +57,13 @@
 %%%%%%pasted from the code I made for myself, so may constain errors or
 %%%%%%inconsistencies, and will certainly contain notes to myself ^_^; 
 
+end
+
 %%
 
+%Please note this code is less thoroughly checked others; it does
+%seem to be working however :-)
+for description_for_user = 1:1       %not a for loop, just folds away comments
 %Code designed to be used to run MACFLSSolverVer.m multiple times, with a
 %different number of turbines T each time.
 %This paramater isn't varied in MACFLSBulkResultsTConst.m as changing T
@@ -95,6 +97,10 @@
 %%% CpGenerated     vector, length length(Teval)    coefficient of power for each turbine
 %%% u_tot           matrix, size n*T                wind speed at each evaulated turbine point
 %%% Re              matrix, size n*T                Reynolds number at each evaulated turbine point
+%%% alpha           matrix, size n*T                angle of attack (deg) at each evaulated turbine point
+%%% Cl              matrix, size n*T                coefficient of lift at each evaulated turbine point
+%%% Cd              matrix, size n*T                coefficient of drag at each evaulated turbine point
+%%% phi             matrix, size n*T                flow angle (rads) at each evaulated turbine point (equal to alpha*pi/180 if pitch = 0) 
 % (note that swept area = 2R*H = 2R per unit height)
 %Again, these are outputs from one run of MACFLSSolverVer.m. If you input
 %(say) twelve T, then GeneratedPower will be a 12*length(Teval) matrix.
@@ -105,10 +111,10 @@
 
 %Relevant notes/protips:
 % - squeeze(matrix) is used to remove dimensions of length 1 from a matrix.
-%(For some reason, selecting M(:,2) from a 2D matrix will return a vector,
-%but selecting M(:,2,5) from a 3D matrix will return a 3D matrix, where two
-%of the dimensions are of length 1.)
-%-  F5 will run the entire code. ctrl+enter will run the section of code
+%(For some reason, although selecting M(:,2) from a 2D matrix will return a
+%vector, selecting M(:,2,5) from a 3D matrix will return a 3D matrix, where
+%two of the dimensions are of length 1.)
+% -  F5 will run the entire code. ctrl+enter will run the section of code
 %currently selected, where a double percent/comment symbol ("%%") defines
 %the start of a new section.
 % - ctrl+R will comment out selected/highlighted lines of code, with a
@@ -118,21 +124,11 @@
 %the first word are just comments (like here); if there is a space, the
 %comment is code that has been commented out, and is designed to be able
 %to become code again with use of ctrl+shift+R.
-
+end
 
 %%
 
 clearvars
-
-%Code needs updated: Use MACFLSBulkResultsTConst.m for considering
-%varying c, TSR, tACW and spacing, and only use this code for considering
-%different row lengths with the same 'pattern' of TSR, tACW. (Or at least,
-%emphasise that the intended use of this code, even if you keep capability
-%for other stuff, which you've probably already got.)
-
-clearvars
-
-%WhichTestsToDo = [true true true];                  %decide which simulations you want to do with the data (ignore for now)
 
 %%%%%user input required%%%%%
 n = 16;         %(n must be divisible by 4)
@@ -150,11 +146,11 @@ smax = 4.2;                                 %maximum spacing considered between 
 nS = 7;                                     %number of spacings to consider
 spacing = smin:(smax-smin)/(nS-1):smax;     %array of all the considered spacings
 
-% %For specifically chosen spacings:
+%For specifically chosen spacings:
 % spacing = [1.01:0.001:1.029 1.03:0.01:1.29 1.3:0.05:1.95 2:0.5:10];
 % nS = length(spacing);
 
-% %If running the code only once:
+%If running the code only once:
 % nS = 1; spacing = 3
 
 
@@ -190,27 +186,6 @@ mT = max(noTurbines);               %number of turbines in longest row
 % in the rows, and analysis of every turbine in each row. Code exists to
 % run evaluations for more general inputs, but you'll need to create the
 % code to present such data yourself, potentially on a case-by-case basis.
-
-% % % % %%%chord c:
-% % % % %Same chord for all turbines
-% % % % c = 0.1*ones(rT,mT);
-% % % % 
-% % % % %For chord getting slightly shorter as turbine count increases (I don't
-% % % % %know why you'd want something like this tbh, I just wanted a third option
-% % % % %besides constant chord and arbitrary chord)
-% % % % % c = zeros(rT,mT);
-% % % % % for i = 1:rT
-% % % % %     c(i,1:noTurbines(i)) = 0.2+0.1/noTurbines(i);
-% % % % % end
-% % % % 
-% % % % %For arbitrary chords lengths (example based on noTurbines = [2:4 6 12])
-% % % % % c = zeros(rT,mT);
-% % % % % c(1,1:2) = [0.1,0.2];
-% % % % % c(2,1:3) = [0.1,0.15,0.2];
-% % % % % c(3,1:4) = [0.1,0.15,0.2,0.25];
-% % % % % c(4,1:6) = [0.1,0.15,0.2,0.25,0.3,0.35];
-% % % % % c(5,1:12) = [0.1:0.01:0.21];
-% % % % c
 
 
 %%%TSR:
@@ -254,6 +229,7 @@ TSR
 %     for j=2:2:noTurbines(i)     %works whether noTurbines(i) is even or odd
 %         tACW(i,j) = false;
 %     end
+%     %%%tACW(2:2:noTurbines(i)) = false %???
 % end
 
 %For arbitrary rotation directions (example based on noTurbines = [2:4 6 12])
@@ -350,7 +326,7 @@ end
 %Now try to plot a 3D Power against spacing and row length/turbine position
 %for the considered turbines
 %This code doesn't work if Teval rows have leading zeros, but that error
-%should never come up.
+%should never come up with the code as written.
 
 if not(arbturb)             %don't do the below if Teval is arbitrary input; you can remove this
                             %if you want but it's probably worth just getting your plots manually
@@ -491,16 +467,13 @@ end
 %but it doesn't work as is, because squeeze(P(any(P,[2 3]),i,any(P,[1 2])))
 %sometimes has zero arrays (maybe fix with rearrange(nonzeros(~),x,y) or do
 %the P(any(P,x),any(P,y)) thing again?
-%But this is getting into too low-priority territiory for me, and/or I'm
-%bored and want to move on
 
+%There are more things that can be done, but I want to get this code out
+%onto github and then start looking at nonlinearities. Probably other
+%general imporvements (eg, the case with arbturb = true) will gradually be
+%added alongside the big improvements.
 
-%It's important to set healthy boundaries, both in your personal life and
-%in the workplace.
-%So if you want other options besides those (for examble if arbturb is
-%true), sorry but you're coding them in yourself XD
-
-
+%Haven't checked but probably this is obsolete
 % for i = 1:rT
 %     figure(3+i)
 %     surf(noTurbines,spacing,P(:,:,i))
@@ -513,8 +486,8 @@ end
 %     % hold on
 %     % surf(noTurbines,spacing,P(:,:,1))
 % end
-
-
+% 
+% 
 % % %It's 4-dimensional time B-)
 % % for i = 1:length(Teval)         %that ain't right
 % %     figure(3+i)

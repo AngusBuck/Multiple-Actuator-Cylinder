@@ -1,3 +1,7 @@
+function [solution,w_x,w_y,q,GeneratedPower,GeneratedCp,u_tot,Re,objectiveValue,exitflag,output] = MACFLSSolverVer(n,U_0,gamma,T,B,beta,R,c,TSR,tACW,spac,Teval)
+%Eg:                                                                                                    MACFLSSolverVer(36,10,22.5,4,3,-1,5,0.1,[4.5 4.8 4.8 4.8],[true false false true],1.5,[1 4])
+
+for boringstuff = 1:1       %not a for loop, just folds away comments
 %A linear multiple actuator cylinder code, an initial release of the
 %planned full multiple actuator cylinder code.
 
@@ -36,10 +40,6 @@
 %issues resulting from use or abuse of the code if it is complete and
 %functional.
 
-%%%%%With the disclaimer made, a validation of the code is nonetheless
-%provided alongside it, showing its accuracy compared to measured results
-%and other's computaitonal results.
-
 
 %If you wish to receive updates when this code is updated; contact me with
 %improvements, questions or suggestions regarding the code; or have found
@@ -57,21 +57,18 @@
 %Any changes made to this code should (usually) also be made to MACFLS.m,
 %and vice versa!
 
+end
 
 %%
-function [solution,w_x,w_y,q,GeneratedPower,GeneratedCp,u_tot,Re,objectiveValue,exitflag,output,r,om] = MACFLSSolverVer(n,U_0,gamma,T,B,beta,R,c,TSR,tACW,spac,Teval)
-
-%Eg: MACFLSSolverVer(36,10,4,3,-1,5,0.1,[4.5 4.8 4.8 4.8],[true false false true],1.5,[1 4])
-
-
+for description_for_user = 1:1       %not a for loop, just folds away comments
 %This code determines the pressure distribution around each turbine in a
 %row of turbines; the resulting influence on the wind around each turbine;
-%and the power generated per height by the turbine, as a function of
-%several variables.
+%the power generated per height by the turbine; and several other variables
+%of interest, as a function of several variables.
 %Rather than being run itself and having variables defined by editing the
 %code, it is designed to be called and have variables passed to it. In
 %particular, this allows it to be called multiple times with multiple
-%variables by the two MACFLBulkResults... files.
+%variables by the two MACFLBulkResults*.m files.
 
 %The code depends on the following inputs, explained here:
 %%% n               natural number                  number of evaluation points around each turbine (code is O(n^2); needs to be a multiple of four)
@@ -96,6 +93,10 @@ function [solution,w_x,w_y,q,GeneratedPower,GeneratedCp,u_tot,Re,objectiveValue,
 %%% CpGenerated     vector, length length(Teval)    coefficient of power for each turbine
 %%% u_tot           matrix, size n*T                wind speed at each evaulated turbine point
 %%% Re              matrix, size n*T                Reynolds number at each evaulated turbine point
+%%% alpha           matrix, size n*T                angle of attack (deg) at each evaulated turbine point
+%%% Cl              matrix, size n*T                coefficient of lift at each evaulated turbine point
+%%% Cd              matrix, size n*T                coefficient of drag at each evaulated turbine point
+%%% phi             matrix, size n*T                flow angle (rads) at each evaulated turbine point (equal to alpha*pi/180 if pitch = 0) 
 %(note that swept area = 2R*H = 2R per unit height)
 
 %Relevant notes/protips:
@@ -106,6 +107,8 @@ function [solution,w_x,w_y,q,GeneratedPower,GeneratedCp,u_tot,Re,objectiveValue,
 %the first word are just comments (like here); if there is a space, the
 %comment is code that has been commented out, and is designed to be able
 %to become code again with use of ctrl+shift+R.
+
+end
 
 %%
 
@@ -160,6 +163,7 @@ thetaval = (deltatheta/2 : deltatheta : 2*pi - deltatheta/2)' ;
 %Dx/Wakex/Ay outputs; then those wrongly-created files continued to be
 %read once the code was changed, as the code was finding the outputs based
 %on the passed T,n etc.
+%Hopefully this won't happen, but just in case!
 
 %Un-normalise (x,y) components
 x = R*x;    y = R*y;
@@ -171,7 +175,7 @@ A_x = D_x + Wake_x;
 %Get Cl, Cd, data for various alpha values.
 %Data for a DU06W200 aerofoil from the github of Edgar Martinez-Ojeda1, an
 %author on "Vertical-axis wind-turbine computations using a 2Dhybrid wake
-%actuator-cylinder model" alongside Francisco Javier Solorio Ordaz1 and
+%actuator-cylinder model" alongside Francisco Javier Solorio Ordaz and
 %Mihir Sen (used for validation):
 DU06W200CL = readmatrix("du06w200cl.csv");
 DU06W200CD = readmatrix("du06w200cd.csv");
@@ -183,8 +187,8 @@ CdData = DU06W200CD(:,6);
 %"Fluid Dynamic Mechanisms..." (DOI:10.1016/j.renene.2016.08.015) also
 %confirms that this is the aerofoil the Windspire uses.
 %Plotting the data shows columns 5-6 as most similar to airfoiltools.com's
-% lots (see below); presumably 5 is closest (as "0.1" (in reference)
-%million = 100,000 (airfoiltools.com's value), but data for 6 is cleaner.
+%lots (see below). Presumably 5 is closest (as "0.1" million (from the
+%reference) = 100000 (airfoiltools.com's value); but data for 6 is cleaner.
 
 %Alternatively, data for a DU06W200 aerofoil @ Ncrit = 9, Re = 10^5, courtesy of http://airfoiltools.com.
 %Not recommended, as alpha values often go higher than the range given by this site; the code won't crash if
@@ -209,11 +213,11 @@ CdData = DU06W200CD(:,6);
 % ClData = polyval(ClFormula,alphavals)
 % CdData = polyval(CdFormula,alphavals)
 
-%Note that these code lines work for the particular data files I've been
-%using; you may need to edit this code and/or the "getCl()" and "getCd()"
+%Note that these code lines work for the particular data files I've used;
+%you may need to edit this code and/or the "getCl()" and "getCd()"
 %functions (see end of the file) to extract data from other sites.
 %In particular, the later functions assume alphavals(1) is the lowest
-%alpha value rather than the highest.
+%alpha value and alphavals(end) is the highest.
 
 %%
 
@@ -222,9 +226,6 @@ x0 = [-0.1*ones(n,T);0.05*ones(n/4,T);-0.05*ones(n/2,T); 0.05*ones(n/4,T)];     
 
 %Combine A_x variable and A_y variable into one variable, so one solver can solve the equation
 A = cat(1,A_x,A_y);
-
-%a thing
-% options.FunctionTolerance = 10^-6;
 
 %Solve the nonlinear (transcendental?) system of equations.
 % options = optimoptions("fsolve","Display","iter");          %I haven't investigated this thoroughly, might hold useful data
@@ -242,12 +243,6 @@ function f = solveFlowPerturbation(A,U_0,w,thetaval,alphavals,T,n,ClData,CdData,
     %...where q is the turbines' pressure distribution.
 end
 
-if exitflag == -2
-    om = output.message;
-else
-    om ="";
-end
-
 %Find w_x, w_y and q
 w_x = solution(1:n,:)
 w_y = solution(n+1:2*n,:)
@@ -256,19 +251,6 @@ q = getq(U_0,solution,thetaval,alphavals,T,n,ClData,CdData,sol,beta,tACW,TSR)
 %Find |u| and Re at each point around the turbine
 u_tot = U_0*sqrt( (1+w_x).^2 + w_y.^2 )
 Re = 1.225.*u_tot.*c./18.*10^6
-
-%%
-%A little section where I try to check/debug my fsolve function
-
-r = sum(objectiveValue.^2,"all");     %This is the value that fsolve compares to sqrt(options.FunctionTolerance) = 10^-3
-
-% figure(11)
-% plot(sort(abs(objectiveValue)))
-% ylabel("Aq - w")
-% 
-% figure(12)
-% plot(log10(sort(abs(objectiveValue))))
-% ylabel("log_{10}(Aq - w)")
 
 %%
 %A plot of wind velocity and components around each turbine
@@ -286,8 +268,8 @@ r = sum(objectiveValue.^2,"all");     %This is the value that fsolve compares to
 % %   %them all the same colour, and putting them apart means they scale rel-
 % %   %-ative to themselves, not each other (so induced-velocity-arrows look
 % %   %the same magitude as the other arrows bc they're scaled independantly)
-% for tCI = 1:T
-%     fplot(@(t) R*sin(t) + spac*(tCI-1)*sin(gamma*pi/180)*2*R, @(t) R*cos(t) + spac*(tCI-1)*cos(gamma*pi/180)*2*R)
+% for tCI=1:T
+%     fplot(@(t) R*sin(t) + turbineCentres(tCI,1), @(t) R*cos(t) + turbineCentres(tCI,2))
 %     text(turbineCentres(tCI,1),turbineCentres(tCI,2),'T'+string(tCI))
 % end
 % %Add title, labels, legend 
@@ -304,11 +286,10 @@ r = sum(objectiveValue.^2,"all");     %This is the value that fsolve compares to
 
 Cl = getCl(T,n,ClData,getclcdindex(U_0,solution,thetaval,alphavals,T,n,beta,tACW,TSR));
 Cd = getCd(T,n,CdData,getclcdindex(U_0,solution,thetaval,alphavals,T,n,beta,tACW,TSR));
-Phi = getPhi(U_0,solution,n,T,thetaval,tACW,TSR);
+phi = getPhi(U_0,solution,n,T,thetaval,tACW,TSR);
 W2 = getW2(U_0,solution,n,T,thetaval,tACW,TSR);
 
 PowerNormalisation = 0.5*1.225*U_0^3*2*R;     %To find Cp, power is normalised by 1/2 * rho * U_0^3 * swept area, ie the rectangle of 2R*(1) for per-height result.
-%%%%%%^checkme
 
 %Power information
 WindPowerSeries = -(1.225*U_0^2)*U_0*( w_y.*cos(thetaval) - (1+w_x).*sin(thetaval) ) .*q *R*deltatheta;
@@ -316,15 +297,17 @@ WindPower = sum(WindPowerSeries,1)
 WindCp = WindPower/PowerNormalisation
 %Approximating the turbine as a continuous cylinder, all of which is extracting energy from the wind
 %simultaneously, the power extracted from wind is rho*U_0^2*integral[u(theta)*q(theta)*R]d(theta).
-%In our discretised model, this becomes sum{ rho*U_0^2*u(theta_i)*q(theta_i)*R*deltaTheta }.
-%This is the upper limit of VAWT energy generation; unclear to me if this is the same as a Betz limit or not.
+%In our discretised model, this becomes rho*U_0^2*sum{u(theta_i)*q(theta_i)*R*deltaTheta }.
+%This is the upper limit of VAWT energy generation, I think equivalent to the Betz limit in a
+%basic HAWT actuator analysis
 
-GeneratedPowerSeries = (TSR*U_0/R) *B/2/pi *R.*( Cl.*sin(Phi) - Cd.*cos(Phi) )*0.5*1.225.*W2*c *deltatheta;
-%%%%%%This matches with [Ning 2016], and with [Madsen 1982] provided his Ft = ct*0.5*1.225.*W2*c
+GeneratedPowerSeries = (TSR*U_0/R) *B/2/pi *R.*( Cl.*sin(phi) - Cd.*cos(phi) )*0.5*1.225.*W2*c *deltatheta;
+%%%%%%This matches with [Ning 2016], and with [Madsen 1982] provided his Ft = ct*0.5*rho.*W2*c
 GeneratedPower = sum(GeneratedPowerSeries,1)
 GeneratedCp = GeneratedPower/PowerNormalisation
 %The power generated by a turbine blade at a given theta is omega*R*TangentialForce(theta) = TSR*U_0/R *R *[Cl*sin(phi) - Cd*cos(phi)] * 0.5*rho*W^2*c 
-%This is then multiplied by the number of blades to determine the total power (energy generated per second) at any instant, and averaged by integrating over theta from 0->2pi and dividing by 2pi. 
+%This is then multiplied by the number of blades to determine the total power (energy generated per second) at any instant, and averaged by integrating
+%over theta from 0->2pi and dividing by 2pi. 
 %In our discretised model, this becomes omega*B/2pi*sum{R*TanForce*deltaTheta}.
 
 %Plot power generated at each point around a revolution
@@ -334,8 +317,6 @@ GeneratedCp = GeneratedPower/PowerNormalisation
 % figure(3)
 % hold on
 % plot(thetaval,WindPowerSeries(:,Teval),thetaval,GeneratedPowerSeries(:,Teval))
-% %%%%%%Recall that at each point, a single blade is technically generating GPS*2pi/deltaTheta/B energy per second. 
-% %%%%%%(These plots show different things, but hopefully this graph + legend is still meaningful)
 % title('Power generated at each point around a revolution')
 % xlabel('theta')
 % ylabel('Power generated')
@@ -387,9 +368,8 @@ function phi = getPhi(U_0,w,n,T,thetaval,tACW,TSR)
     phi = atan(getVn(U_0,w,n,thetaval)./getVt(U_0,w,n,T,thetaval,tACW,TSR));
 end
 
-%assumes alpha(1) = minimum alpha and alpha(end) = maximum alpha
-function clcdindex = getclcdindex(U_0,w,thetaval,alphavals,T,n,beta,tACW,TSR)
 %possibly I can do this more efficiently, calling less often or putting it inside getCl/getCd
+function clcdindex = getclcdindex(U_0,w,thetaval,alphavals,T,n,beta,tACW,TSR)
     clcdindex = zeros(n,T);
     % minValues(k1,k2) = zeros(n,T);
     % closestIndexes(k1,k2) = zeros(n,T);           %use this if you want to save the values I guess?
@@ -418,7 +398,7 @@ function alpha = getAlpha(U_0,w,n,T,thetaval,beta,tACW,TSR)
     alpha = getPhi(U_0,w,n,T,thetaval,tACW,TSR)*180/pi - beta;     %we want alpha in degees, everything else in radians
 end
 
-%%%%%%This can probably be done without a loop
+%%%%%%getCl and getCd can probably be done without a loop (ie more quickly)
 function Cl = getCl(T,n,ClData,clcdindex)
     Cl=zeros(n,T);
     for k1 = 1:n
@@ -444,9 +424,9 @@ function [x,y,D_x,Wake_x,A_y] = findDxWakexAy2DLinear(n,T,spac,gamma,normalisedT
 
 %This data is saved to a file with the following filename:
 filename = "findDxWakexAxAyfiles\VariablesN"+string(n)+"T"+string(T)+"spac"+string(spac)+"gamma"+string(gamma)+".mat"
-%Having "." in the filename should be fine. If you're worried, or know it 
-%causes problems on your system, you could eg add a code line changing eg
-%"1.5" to "1,5" or "1_5" etc?
+%Having "." in the filename should be fine on Windows. If you're worried,
+%or know it  causes problems on your system, you could eg add a code line
+%changing "1.5" to "1,5" or "1_5", etc?
 
 if isfile(filename)
     disp("File with required variables found. Reading and returning required variables.")
@@ -487,22 +467,21 @@ else
                     %(It's more intuitive not to have this, and just have x(i,I)-nTC(J) in the D_x (etc) formulae; but this is useful elsewhere and likely(?) more computationally efficient.)
                     x_i(i,j,I,J) = x(i,I) - normalisedTurbineCentres(J,1);
                     y_i(i,j,I,J) = y(i,I) - normalisedTurbineCentres(J,2);
-                    %For example, for a turbine influencing itself, x_i(i,j,I,I) = x(i,I)-nTC(I,1) = -sin(thetaval(i))+{3}-{3} = -sin(thetaval(i)), like a turbine centred on (0,0).
-                    %Or, for a turbine 5 normalised units away, x_i(i,j,I,J) = x(i,I)-nTC(J,1) = -sin(th(i))+{1}-{6} = -sin(th(i))-5, so the x-point is between 4 and 6 units away from the turbine centre 
+%%%%%%                    %For example, for a turbine influencing itself, x_i(i,j,I,I) = x(i,I)-nTC(I,1) = -sin(thetaval(i))+{3}-{3} = -sin(thetaval(i)), like a turbine centred on (0,0).
+%%%%%%                    %Or, for a turbine 5 normalised units away, x_i(i,j,I,J) = x(i,I)-nTC(J,1) = -sin(th(i))+{1}-{6} = -sin(th(i))-5, so the x-point is between 4 and 6 units away from the turbine centre 
                     
 
                     %Caclulate the coefficient matrix D_x
                     if I~=J
                         %if I=/=J, D_x(i,j,I,J) = full integral
                         D_x(i,j,I,J) = 1/(2*pi).*integral(@(theta) ((x_i(i,j,I,J) -10^-4 +sin(theta)).*sin(theta) - (y_i(i,j,I,J)-cos(theta)).*cos(theta))./((x_i(i,j,I,J) -10^-4 +sin(theta)).^2+(y_i(i,j,I,J)-cos(theta)).^2),thetaval(j)-deltatheta/2,thetaval(j)+deltatheta/2);
-                        %I know I know, I hate this tiny 10^-4 offset too, but it stops the code giving orange integration errors
+%%%%%%                        %I know I know, I hate this tiny 10^-4 offset too, but it stops the code giving orange integration errors
                         %I think it's right in that we're analysing on the just-upwind side of the turbine, but it will need checked near the top, particularly if we
                         %introduce wake expansion and the top/bottom of the circle is no longer the definition of the upwind/downwind evaluaiton curves; and of
                         %course, ideally there would be a more elegent way of handling this.
                         %I initially used 10^-5 because that was the smallest power-of-ten offset that worked, but I'm using 10^-4 now just in case 
                     else
                         %If I=J (i.e. finding the influence of the turbine on itself), we can calculate terms directly as below
-                        %These matrices depend only on n, so it is possible to precompute and store if desired
                         if i~=j
                             D_x(i,j,I,J) = deltatheta/4/pi;
                         elseif i>n/2
@@ -510,13 +489,14 @@ else
                         else
                             D_x(i,j,I,J) = (-1+1/n)/2;
                         end
+                        %These matrices depend only on n, so it is possible to precompute and store if desired
                     end
 
                     %Caclulate the coefficient matrix Wake_x
 
                     %If I=J, add wake terms for back half of turbine
                     %(We evaluate on the just-upwind sides of the disc, so the back is influenced by the front, but the front isn't influeced by the front and the back not by the back.)
-                    %I believe this is fine due to the terms we chose for D_x with I=J,i=j.
+                    %%%%%%I believe this is fine due to the terms we chose for D_x with I=J,i=j.
                     if I==J
                         if i>n/2 && j==n+1-i
                             Wake_x(i,j,I,J) = -1;
@@ -545,14 +525,16 @@ else
 
                     %Caclulate the coefficient matrix A_y
                     A_y(i,j,I,J) = 1/(2*pi).*integral(@(theta) ((x_i(i,j,I,J) -10^-4 +sin(theta)).*cos(theta) + (y_i(i,j,I,J)-cos(theta)).*sin(theta))./((x_i(i,j,I,J) -10^-4 +sin(theta)).^2+(y_i(i,j,I,J)-cos(theta)).^2),thetaval(j)-deltatheta/2,thetaval(j)+deltatheta/2);
-                    
+                    %Again, -10^-4 sucks, but cé la vie
                 end
             end
         end
     end
-end
+end     %at last
 
 %save the variables for next time
+%comment this out if required, eg if turbineCentres isn't specified
+%unabiguously by {n,T,spac,gamma}.
 save(filename,"x","y","D_x","Wake_x","A_y")
 
 end

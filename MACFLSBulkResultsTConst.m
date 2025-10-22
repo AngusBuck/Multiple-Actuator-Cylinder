@@ -1,4 +1,4 @@
-for boringstuff = 1:1
+for boringstuff = 1:1       %not a for loop, just folds away comments
 %A code which calls a linear multiple actuator cylinder code multiple
 %times, where any of the variables can be altered except for the number of
 %turbines in a row.
@@ -39,10 +39,6 @@ for boringstuff = 1:1
 %issues resulting from use or abuse of the code if it is complete and
 %functional.
 
-%%%%%With the disclaimer made, a validation of the called code is nonetheless
-%provided alongside it, showing its accuracy compared to measured results
-%and other's computaitonal results.
-
 
 %If you wish to receive updates when this code is updated; contact me with
 %improvements, questions or suggestions regarding the code; or have found
@@ -55,18 +51,20 @@ for boringstuff = 1:1
 %   video output
 %(Most improvements will occur in MACFLS.m and MACFLSSolverVer.m.)
 
-%Any changes made to this code may also need made to
-%MACFLSBulkResultsTVar.m, and vice versa!
+%Changes made to this code may also need made to MACFLSBulkResultsTVar.m,
+%and vice versa!
 
+end
 
 %%
 
+for description_for_user = 1:1       %not a for loop, just folds away comments
 %Code designed to be used to run MACFLSSolverVer.m multiple times, taking
 %multiple n, U_0, gamma, B, beta, R, c, TSR layouts, tACW layouts, spacing,
 %and Teval as input; and returning the corresponding
 %[solution,w_x,w_y,q,PowerGenerated,CpGenerated,u_tot,Re] for each
 %combination of variables. T must also be provided, but cannot be varied:
-%if you wish to vary T, use MACFLSBulkResultsTVariable.m instead.
+%if you wish to vary T, use MACFLSBulkResultsTVar.m instead.
 
 %%%%%%MACFLSSolverVer.m depends on the following inputs, explained here:
 %%% n               natural number                  number of evaluation points around each turbine (code is O(n^2); needs to be a multiple of 4)
@@ -96,6 +94,10 @@ for boringstuff = 1:1
 %%% CpGenerated     vector, length length(Teval)    coefficient of power for each turbine
 %%% u_tot           matrix, size n*T                wind speed at each evaulated turbine point
 %%% Re              matrix, size n*T                Reynolds number at each evaulated turbine point
+%%% alpha           matrix, size n*T                angle of attack (deg) at each evaulated turbine point
+%%% Cl              matrix, size n*T                coefficient of lift at each evaulated turbine point
+%%% Cd              matrix, size n*T                coefficient of drag at each evaulated turbine point
+%%% phi             matrix, size n*T                flow angle (rads) at each evaulated turbine point (equal to alpha*pi/180 if pitch = 0) 
 % (note that swept area = 2R*H = 2R per unit height)
 %Again, these are outputs from one run of MACFLSSolverVer.m. If you input
 %(say) twelve U_0, then GeneratedPower will be a 12*length(Teval) matrix;
@@ -104,10 +106,10 @@ for boringstuff = 1:1
 
 %Relevant notes/protips:
 % - squeeze(matrix) is used to remove dimensions of length 1 from a matrix.
-%(For some reason, selecting M(:,2) from a 2D matrix will return a vector,
-%but selecting M(:,2,5) from a 3D matrix will return a 3D matrix, where two
-%of the dimensions are of length 1.)
-%-  F5 will run the entire code. ctrl+enter will run the section of code
+%(For some reason, although selecting M(:,2) from a 2D matrix will return a
+%vector, selecting M(:,2,5) from a 3D matrix will return a 3D matrix, where
+%two of the dimensions are of length 1.)
+% -  F5 will run the entire code. ctrl+enter will run the section of code
 %currently selected, where a double percent/comment symbol ("%%") defines
 %the start of a new section.
 % - ctrl+R will comment out selected/highlighted lines of code, with a
@@ -141,7 +143,7 @@ Teval = 1:T;
 %Set n (all must be divisible by 4)
 % n = 96;
 % n = [16 32 64 128 256];
-n = [24:8:32];
+n = [8:8:32];
 nn = length(n);
 
 %Set U_0
@@ -171,8 +173,8 @@ beta = 0;
 nbeta = length(beta);
 
 %Set R
-R = 0.61;
-% R = 3:7;
+% R = 0.61;
+R = 3:7;
 % R = [1 10 100];
 nR = length(R);
 
@@ -184,9 +186,9 @@ nc = length(c);
 
 %Set spacing between turbines.
 % spacing = 0;
-% spacing = 1.5:0.5:5;
+spacing = 1.5:0.5:5;
 % spacing = [1.01:0.001:1.029 1.03:0.01:1.29 1.3:0.05:1.95 2:0.5:10];
-spacing = [1.05:0.05:1.5 1.6:0.1:2 2.25:0.25:10]
+% spacing = [1.05:0.05:1.5 1.6:0.1:2 2.25:0.25:10]
 nS = length(spacing);
 
 
@@ -194,7 +196,8 @@ nS = length(spacing);
 %so varying them requires constructing a 2D array, not a 1D one.
 
 %Set TSR
-TSR= [2.7 2.7*ones(1,T-1)];           %no varying TSR layout between runs
+TSR = 2.7*ones(1,T)                 %no varying TSR layout between runs
+%TSR= [2.7 2.7*ones(1,T-1)];        
 
 % TSR(1,:) = 4.8*ones(1,T);
 % TSR(2,:) = [4.5 4.8*ones(1,T-1)];
@@ -231,11 +234,6 @@ P = zeros(length(Teval),nn,nU_0,nB,nbeta,nR,nS,nc,nTSR,ntACW,ngamma);           
 Cp = zeros(length(Teval),nn,nU_0,nB,nbeta,nR,nS,nc,nTSR,ntACW,ngamma);                              %     "       "       "       "       "    Cp, the coefficient of power of each evaluated turbine for each run
 % x_pertubation = zeros(T,nn,nU_0,nB,nbeta,nR,nS,nc,nTSR,ntACW,ngamma,max(n));                       %     "       "       "       "       "    w_x, the normalised x-velocity pertubations
 % y_pertubation = zeros(T,nn,nU_0,nB,nbeta,nR,nS,nc,nTSR,ntACW,ngamma,max(n));                       %     "       "       "       "       "    w_y, the normalised y-velocity pertubations
-objValList = zeros(2*max(n),length(Teval),nn,nU_0,nB,nbeta,nR,nS,nc,nTSR,ntACW,ngamma);             %     "       "       "       "       "    objVal, the final values of Aq-w reached by fsolve
-exitflaglist = zeros(nn,nU_0,nB,nbeta,nR,nS,nc,nTSR,ntACW,ngamma);                                  %     "       "       "       "       "    the exit flags that folve outputs when it finishes
-%%%!!!
-rlist = zeros(nn,nU_0,nB,nbeta,nR,nS,nc,nTSR,ntACW,ngamma);                                         %     "       "       "       "       "    r, the sum of squares of difference between Aq and w, or something idk
-omlist = strings(nn,nU_0,nB,nbeta,nR,nS,nc,nTSR,ntACW,ngamma);                                        %     "       "       "       "       "    om, the output message from fsolve when the solution fails with exit flag -2 (when implemented, may change)
 %You can have length(Teval) or T as your dimension size in the first
 %column; the former means you don't have rows of zeros for turbines you're
 %not considering, the latter gives you an easier way to track which turbine
@@ -244,7 +242,7 @@ omlist = strings(nn,nU_0,nB,nbeta,nR,nS,nc,nTSR,ntACW,ngamma);                  
 %%%%%%This is probably not true (Teval(1:3) gives you T=1,6,12 easy
 %enough); just work out if w_x(any(w_x,1),:) works.
 
-%[solution,w_x,w_y,q,GeneratedPower,GeneratedCp,u_tot,Re,objectiveValue,exitflag,~,r,om] = MACFLSSolverVer(n,U_0,gamma,T,B,beta,R,c,TSR,tACW,spacing,Teval)
+%[solution,w_x,w_y,q,GeneratedPower,GeneratedCp,u_tot,Re,objectiveValue,exitflag,~] = MACFLSSolverVer(n,U_0,gamma,T,B,beta,R,c,TSR,tACW,spacing,Teval)
 
 for iTSR = 1:nTSR
 for itACW = 1:ntACW
@@ -256,19 +254,15 @@ for itACW = 1:ntACW
     for iR = 1:nR
     for ic = 1:nc
     for iS = 1:nS
-        %[soln,w_x,w_y,q,PowerGenerated,CpGenerated,u_tot,Re,objectiveValue,exitflag,~,r,om] = MACFLSSolverVer(n,U_0,gamma,T,B,beta,R,c,TSR,tACW,spacing,Teval)         %for reference
+        %[soln,w_x,w_y,q,PowerGenerated,CpGenerated,u_tot,Re,objectiveValue,exitflag,~] = MACFLSSolverVer(n,U_0,gamma,T,B,beta,R,c,TSR,tACW,spacing,Teval)         %for reference
         
-        [~,w_x,w_y,~,PowerGenerated,CpGenerated,~,~,objectiveValue,exitflag,~,r,om] = MACFLSSolverVer(n(in),U_0(iU_0),gamma(igamma),T,B(iB),beta(ibeta),R(iR),c(ic),TSR(iTSR,:),tACW(itACW,:),spacing(iS),Teval);
+        [~,w_x,w_y,~,PowerGenerated,CpGenerated,~,~,objectiveValue,exitflag,~] = MACFLSSolverVer(n(in),U_0(iU_0),gamma(igamma),T,B(iB),beta(ibeta),R(iR),c(ic),TSR(iTSR,:),tACW(itACW,:),spacing(iS),Teval);
         
         % x_pertubation(:,in,iU_0,iB,ibeta,iR,iS,ic,iTSR,itACW,igamma,:) = w_x(Teval,:);
         % y_pertubation(:,in,iU_0,iB,ibeta,iR,iS,ic,iTSR,itACW,igamma,:) = w_y(Teval,:);
         %Note that for conditions where n(in) < max(n), the above rows will have zeros filling in entire from indices n(in)+1:max(n)
         P(:,in,iU_0,iB,ibeta,iR,iS,ic,iTSR,itACW,igamma) = PowerGenerated(any(PowerGenerated,1));
         Cp(:,in,iU_0,iB,ibeta,iR,iS,ic,iTSR,itACW,igamma) = CpGenerated(any(CpGenerated,1));
-        objValList(1:2*n(in),1:length(Teval),in,iU_0,iB,ibeta,iR,iS,ic,iTSR,itACW,igamma) = objectiveValue;
-        exitflaglist(in,iU_0,iB,ibeta,iR,iS,ic,iTSR,itACW,igamma) = exitflag;
-        rlist(in,iU_0,iB,ibeta,iR,iS,ic,iTSR,itACW,igamma) = r;
-        omlist(in,iU_0,iB,ibeta,iR,iS,ic,iTSR,itACW,igamma) = om;
     end
     end
     end
@@ -286,7 +280,7 @@ end
 %not a vector).
 %If you wanted to do this, you could have:
  %Set corresponding pair
- % Pair(1,:) = [0.5:0.5:15.5]     <<<--wind speed / corresponding TSRs vvv
+ % Pair(1,:) = [0.5:0.5:15.5]                     <<<--wind speed / corresponding TSRs vvv
  % Pair(2,:) = [0.01,0.57,0.91,1.87,1.15,1.36,1.34,1.60,2.00,2.16,2.12,2.09,2.12,2.18,2.18,2.21,2.22,2.20,2.18,2.15,2.10,2.04,1.95,1.84,1.70,1.59,1.39,1.02,0.86,0.78]
  % nPair = size(Pair,2)
 %and relpace the U_0 and TSR for loops (or whichever other pair of for
@@ -298,14 +292,6 @@ end
 %("***" only for emphasis)
 
 %%
-
-%%%%%%want to keep track of
-% polarplot(sum(squeeze(P(:,dn,dU_0,dB,dbeta,dR,1,dc,dTSR,dtACW,:)),1)/2/215.7537)
-% hold on
-% polarplot(sum(squeeze(P(:,dn,dU_0,dB,dbeta,dR,2,dc,dTSR,dtACW,:)),1)/2/215.7537)
-% polarplot(sum(squeeze(P(:,dn,dU_0,dB,dbeta,dR,3,dc,dTSR,dtACW,:)),1)/2/215.7537)
-% polarplot(sum(squeeze(P(:,dn,dU_0,dB,dbeta,dR,4,dc,dTSR,dtACW,:)),1)/2/215.7537)
-% legend(["Average power, spacing = 1.5D" "Average power, spacing = 2D" "Average power, spacing = 2.5D" "Average power, spacing = 3D"])
 
 %This section will make plots of Power against each variable, for each
 %turbine in Teval.
@@ -342,100 +328,6 @@ dR     = i6;        dS     = i7;
 dc     = i8;        dTSR   = i9;
 dtACW  = i10;       dgamma = i11;
 
-%%
-%A wee section where I try to debug fsolve
-
-%figure(801)
-%"No solution found.↵↵fsolve stopped because the last step was ineffective."
-%"No solution found.↵↵fsolve stopped because the relative size of the current step is less"
-
-
-figure(901)
-% plot(spacing,squeeze(exitflaglist))     %when varying 1 variable
-surf(spacing,n,squeeze(exitflaglist))     %when varying 2 variables
-xlabel("spacing")
-ylabel("n")
-disp("4; Equation solved. Magnitude of search direction smaller than specified tolerance.")
-disp("3; Equation solved. Change in residual smaller than the specified tolerance.")
-disp("2; Equation solved. Change in x smaller than the specified tolerance, or Jacobian at x is undefined.")
-disp("1; Equation solved. First-order optimality is small.")
-disp("0; Number of iterations exceeded options.MaxIterations or number of function evaluations exceeded options.MaxFunctionEvaluations.")
-disp("-1; Output function or plot function stopped the algorithm.")
-disp("-2; Equation not solved. The exit message can have more information.")
-disp("-3; Equation not solved. Trust region radius became too small (trust-region-dogleg algorithm).")
-
-%for each n, how many solutions converged?
-figure(902)
-plot(n,sum(squeeze(exitflaglist)>0,2)',n,sum(squeeze(exitflaglist)>=0,2)')
-
-% figure(903)
-% hold on
-% plot(objValList(:,1))
-% plot(objValList(:,2))
-
-
-% % % figure(910)
-% % % for i = 1:nn
-% % %     hold on
-% % %     % plot(log10(abs(squeeze(objValList(i,1,1,1,1,1,1,:)))))
-% % %     plot(max(log10(abs(squeeze(objValList(i,1,1,1,1,1,1,:))))))
-% % %     plot(squeeze(exitflaglist(i,1,1,1,1,:)))
-% % % end
-% % % figure(911)
-% % % for i = 1:nn
-% % %     hold on
-% % %     % plot(log10(abs(squeeze(objValList(i,2,1,1,1,1,1,:)))))
-% % %     plot(max(log10(abs(squeeze(objValList(i,2,1,1,1,1,1,:))))))
-% % %     plot(squeeze(exitflaglist))
-% % % end
-
-for i = 1:nn
-    figure(90300+i)
-    surf(spacing,1:n(i),abs(squeeze(objValList(1:n(i),2,i,1,1,1,1,:))))
-end
-for i = 1:nn
-    figure(90400+i)
-    hold on
-    surf(spacing,1:n(i),log10(abs(squeeze(objValList(1:n(i),2,i,1,1,1,1,:)))))
-    surf(spacing,1:n(i),-2*ones(n(i),nS))
-end
-
-
-figure(905)
-surf(spacing,n(2:end),log10(abs(squeeze(rlist(2:end,1,1,1,1,:)))))
-hold on
-surf(spacing,n(2:end),-3*ones(nn-1,nS))
-surf(spacing,n(2:end),-2*ones(nn-1,nS))
-%surf(spacing,n(2:end),-1.5*ones(nn-1,nS))
-
-% figure(906)
-% hold on
-% plot(squeeze(exitflaglist))
-% plot(log10(abs(objValList(:,1))))
-% plot(log10(abs(objValList(:,2))))
-
-
-figure(906)
-plot(spacing,squeeze(rlist),spacing,10^-3*ones(1,nS))
-ylabel("r")
-
-figure(907)
-plot(spacing,log10(squeeze(rlist)),spacing,-3*ones(1,nS))
-ylabel("log_{10}(r)")
-hold on
-rlistboolean = squeeze(rlist > 10^-3)
-surf(spacing,n,double(rlistboolean))
-
-figure(908)
-hold on
-s = strings(1,nS);
-for i = 1:nS
-    plot(n,rlistboolean(:,i)+0.01*i);
-    s(i) = "Spacing = " + spacing(i) + "D";
-end
-legend(s)
-
-
 
 %%
 %We plot {output} vs {variable} (say, Power vs U_0 or Cp vs TSR) for each
@@ -456,7 +348,6 @@ legend(s)
 %     % legend(s)
 % end
 
-%'MajorTicks', 0:10:n,
 
 %Stacked 2D plots section
 for k = 1           %not a loop, I just want to be able to fold this code chunk away
@@ -683,82 +574,19 @@ end
 end
 
 
-%Section for plotting two variables against each other
+%Section for plotting two variables against each other within one turbine
+%Example below is for varying n and spacing, but can be replaced with
+%whichever variables you want to plot :-)
 for i = 1:length(Teval)
     figure(40+i)            %figure(40+Teval(i)) might be helpful too
-    surf(R,U_0,squeeze(P(i,dn,:,dB,dbeta,:,dS,dc,dTSR,dtACW)))
-    %note surf(R,U_0,P) despite the order within P being U_0 then R
-    xlabel('Radius (m)')
-    ylabel('Wind Speed (m/s)')
+    surf(spacing,n,squeeze(P(i,:,dU_0,dB,dbeta,dR,:,dc,dTSR,dtACW)))
+    %note surf(spacing,n,P) despite the order within P being n then spacing
+    xlabel('separation (D)')
+    ylabel('degree of accuracy')
     zlabel('Power (W)')
 end
-%copy-paste this section, and fill in what variables you want to plot :-)
 
-
-%Section for w_x, w_y plots
-%%%%%%I should do this lol
-
-% % % %     %ldgXY{i} = sprintf('average power of %d turbines',i);
-
-
-%There are of course other plots you can do, but I've limited time before
-%the conference I'm sharing this at and I think I need to prioritise other
-%things unfortunately ^_^;
+%There are of course other plots you can do! More may be included in future
+%versions :-)
 
 %Thank you for using my work and making it this far! :D
-
-
-%Obsolete:
-% % % Psubset = squeeze(P(:,1:22,1,1,1,1,:));
-% % % subsetrlist = squeeze(rlist(1:22,1,1,1,1,:));
-% % % subsetexitflaglist = squeeze(exitflaglist(1:22,1,1,1,1,:));
-% % % 
-% % % figure(801)
-% % % surf(spacing, n(1:22), squeeze(Psubset(1,:,:)) )
-% % % xlabel("spacing")
-% % % ylabel("n")
-% % % 
-% % % figure(802)
-% % % surf(spacing, n(1:22), squeeze(Psubset(2,:,:)) )
-% % % xlabel("spacing")
-% % % ylabel("n")
-% % % 
-% % % %nn = 44; effective nn = 22
-% % % %max(n) is 1424, bc I forgot 1440 isn't a power of two XD ^_^;
-% % % %effective max(n) = 352
-% % % 
-% % % %size objValList = 2*max(n) * nTeval * nn *1*1*1*1 * nS
-% % % % size exitFlagList = nn *1*1*1*1 * nS
-% % % % size rlise = nn *1*1*1*1 * nS
-% % % 
-% % % %squeeze(objValList(:,2,22,1,1,1,1,47))' goes up to 704 - ??
-% % % %   - length(objectiveValue) = 784*2
-% % % %   - 784/2 = 392, ie n(23); 704/2 = 352, ie n(22)
-% % % % --> use subsetObjValList = squeeze( objValList(1:2*n(22),:,1:22,1,1,1,1,:) )
-% % % 
-% % % figure(803)
-% % % hold on
-% % % surf(subsetrlist)
-% % % surf(10^-3*ones(22,47))
-% % % xlabel("spacing")
-% % % ylabel("n")
-% % % 
-% % % figure(804)
-% % % hold on
-% % % surf(log10(subsetrlist))
-% % % surf(-3*ones(22,47))
-% % % 
-% % % 
-% % % % figure(805)
-% % % % surf(spacing, n(1:22), subsetexitflaglist)
-% % % % xlabel("spacing")
-% % % % ylabel("n")
-% % % % disp("4; Equation solved. Magnitude of search direction smaller than specified tolerance.")
-% % % % disp("3; Equation solved. Change in residual smaller than the specified tolerance.")
-% % % % disp("2; Equation solved. Change in x smaller than the specified tolerance, or Jacobian at x is undefined.")
-% % % % disp("1; Equation solved. First-order optimality is small.")
-% % % % disp("0; Number of iterations exceeded options.MaxIterations or number of function evaluations exceeded options.MaxFunctionEvaluations.")
-% % % % disp("-1; Output function or plot function stopped the algorithm.")
-% % % % disp("-2; Equation not solved. The exit message can have more information.")
-% % % % disp("-3; Equation not solved. Trust region radius became too small (trust-region-dogleg algorithm).")
-% % % 
