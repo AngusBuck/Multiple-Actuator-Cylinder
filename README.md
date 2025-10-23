@@ -1,6 +1,6 @@
 A linear multiple actuator cylinder code, an initial release of the planned full multiple actuator cylinder code.
 
-You can download the files individually, but it's easier to just just download the .zip file, as some folder structure is required for the code to run.
+You can download the files individually, but it's easier to **just download the .zip file**, as some folder structure is required for the code to run.
 
 
 Produced by Angus Buck, PhD student at the University of Strathclyde, following the work of Andrew Ning (aning@byu.edu) in "Actuator cylinder theory for multiple vertical axis wind turbines" (doi:10.5194/wes-1-327-2016).
