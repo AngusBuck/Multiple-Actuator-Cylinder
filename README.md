@@ -14,7 +14,7 @@ Email angus.buck.2016@uni.strath.ac.uk if you want to be added to a mailing list
 Transparency: If you know the relevant coding languages and are comfortable using a less-commented code, it's very likely that using one of the codes from below will give more accurate results than this code in its current state. If however you want a more "pick-up-and-play" model, this code is very thoroughly commented and easy to use: just open the file, set your variables, change your aerofoil data if you want to, and hit "run". This code also has batch-running capability and the ability to compare results with different inputs, which I'm not sure if the others have.
 
 
-I believe there are other good actuator cylinder codes (associated references below), but I'm only confident on the availability of the first two.
+I believe there are other good actuator cylinder codes (associated references below), but I'm only confident on the availability of the first three.
 
 Andrew Ning: doi:10.5194/wes-1-327-2016 , https://github.com/byuflowlab/vawt-ac
 
